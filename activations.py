@@ -27,7 +27,8 @@ def softmax(inputs):
 
 
 def softmax_grad(outputs):
-    return outputs * (1 - outputs)
+    # Think about this one
+    return np.diag(outputs) - np.outer(outputs, outputs)
 
 
 def log_softmax(inputs):

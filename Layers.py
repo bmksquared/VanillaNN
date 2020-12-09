@@ -55,9 +55,33 @@ class ActivationLayer(Layer):
         :param output_gradient:
         :return:
         """
-        # dL/dx = dL/dy * dy/dx, y is sigmoid therefore
+        # dL/dx = dL/dy * dy/dx
         activation_gradient = self.activation_gradient(self.outputs)
         input_gradient = output_gradient * activation_gradient
+        return input_gradient
+
+
+class SoftMaxLayer(Layer):
+    def __init__(self):
+        super().__init__()
+
+    def forward_pass(self, inputs):
+        self.inputs = inputs
+        inputs -= np.max(inputs)
+        exponents = np.exp(inputs)
+        exponents_sum = np.sum(exponents)
+        self.outputs = exponents / exponents_sum
+        return self.outputs
+
+    def backward_pass(self, output_gradient):
+        """
+
+        :param output_gradient:
+        :return:
+        """
+        # dL/dx = dy/dx * dL/dy
+        softmax_gradient = np.diag(self.outputs) - np.outer(self.outputs, self.outputs)
+        input_gradient = np.dot(softmax_gradient, output_gradient)
         return input_gradient
 
 
@@ -90,7 +114,7 @@ class LossLayer:
 
 
 class ConvolutionLayer:
-    def __init__(self, input_size, filter_size, out_feature_maps, stride=1, valid_padding=False):
+    def __init__(self, input_size, filter_size, out_feature_maps, stride=1, same_padding=True):
         """
 
         :param input_size: D x H x W
@@ -101,7 +125,7 @@ class ConvolutionLayer:
         self.outputs = None
         # Setting up all the parameters
         self.stride = stride
-        self.valid_padding = valid_padding
+        self.same_padding = same_padding
         # input_depth is number of channels in the Input
         self.input_depth, self.input_height, self.input_width = input_size
         self.filter_height, self.filter_width = filter_size
@@ -112,7 +136,7 @@ class ConvolutionLayer:
         self.filter_weights = np.random.standard_normal(
             (out_feature_maps, self.input_depth, self.filter_height, self.filter_width))
 
-        if valid_padding:
+        if not same_padding:
             self.output_height, self.output_width = (self.input_height - self.filter_height) // stride + 1, \
                                                     (self.input_width - self.filter_width) // stride + 1
         self.biases = np.random.randn(out_feature_maps, self.output_height, self.output_width)
@@ -139,7 +163,7 @@ class ConvolutionLayer:
     def forward_pass(self, inputs):
         self.inputs = inputs
         self.modified_inputs = inputs
-        if not self.valid_padding:
+        if self.same_padding:
             self.modified_inputs = self._add_padding(self.inputs)
         # self.outputs = self.biases + self._convolve_forward(self.modified_inputs, self.filter_weights)
         # return self.outputs
