@@ -9,8 +9,8 @@ from tensorflow.keras.datasets import mnist
 
 
 def main():
-    # data = load_digits()
     # data = load_iris()
+    # data = load_digits()
     # train_set, test_set, train_labels, test_labels = train_test_split(
     #     data['data'], data['target'], test_size=0.20)
 
@@ -38,9 +38,11 @@ def main():
     # Train the network on Data
     neural_net.fit(train_set, train_labels_one_hot)
     # Predictions on Test
-    # neural_net.test(test_set, test_labels_one_hot)
+    neural_net.test(test_set, test_labels_one_hot)
 
-    print(f"Test accuracy of the model is {100 * neural_net.get_accuracy(test_set, test_labels):.2f}")
+    print("******* Test Results *******")
+    print(f"Test accuracy is {100 * neural_net.accuracy:.2f}")
+    print(f"Test loss is {neural_net.test_loss:.5f}")
 
 
 if __name__ == '__main__':
